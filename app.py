@@ -6,7 +6,8 @@ def load_data():
     try:
         data = pd.read_csv("expenses.csv")
     except FileNotFoundError:
-        data = pd.DataFrame(columns=["Category", "Amount", "Date"])
+        # Adding "Description" column to the DataFrame if file doesn't exist
+        data = pd.DataFrame(columns=["Category", "Amount", "Date", "Description"])
     return data
 
 # Function to save the data into a CSV file
@@ -26,17 +27,18 @@ def main():
         category = st.selectbox("Category", ["Food", "Transport", "Entertainment", "Bills", "Other"])
         amount = st.number_input("Amount", min_value=0.01, format="%.2f")
         date = st.date_input("Date")
+        description = st.text_area("Description", "Enter a short description for this expense")  # New description input
         submit_button = st.form_submit_button("Submit")
 
         if submit_button:
-            # Add new data to the DataFrame
-            new_data = pd.DataFrame({"Category": [category], "Amount": [amount], "Date": [date]})
+            # Add new data to the DataFrame, including the description
+            new_data = pd.DataFrame({"Category": [category], "Amount": [amount], "Date": [date], "Description": [description]})
             data = pd.concat([data, new_data], ignore_index=True)  # Replacing .append() with pd.concat()
 
             # Save the updated data
             save_data(data)
 
-            st.success(f"Expense added: {category} - ${amount} on {date}")
+            st.success(f"Expense added: {category} - ${amount} on {date} with description: {description}")
     
     # Display the current expenses
     if not data.empty:
