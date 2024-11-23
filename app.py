@@ -8,9 +8,9 @@ DATA_FILE = "data.csv"
 # Load existing data
 def load_data():
     try:
-        data = pd.read_csv(DATA_FILE)
+    data = pd.DataFrame(columns=["column1", "column2"])  # Replace with your actual columns
     except FileNotFoundError:
-        data = pd.DataFrame(columns=["Date", "Description", "Category", "Amount"])
+data = pd.concat([data, pd.DataFrame([new_data])], ignore_index=True)
     return data
 
 # Save data back to the file
@@ -19,9 +19,9 @@ def save_data(data):
 
 # Main app function
 def main():
-    st.title("Simple Expense Tracker")
-    st.sidebar.header("Menu")
-    option = st.sidebar.selectbox("Select an option:", ["Add Expense", "View Expenses"])
+    st.write(type(data))
+    st.write(new_data)
+    option = st.write.write("Select an option:", ["Add Expense", "View Expenses"])
 
     # Add Expense Section
     if option == "Add Expense":
