@@ -1,65 +1,49 @@
 import streamlit as st
 import pandas as pd
-from datetime import datetime
 
-# Load or create the data file
-DATA_FILE = "data.csv"
-
-# Load existing data
+# Function to load the expense data
 def load_data():
     try:
-        data = pd.read_csv(DATA_FILE)
+        data = pd.read_csv("expenses.csv")
     except FileNotFoundError:
-        data = pd.DataFrame(columns=["Date", "Description", "Category", "Amount"])
+        data = pd.DataFrame(columns=["Category", "Amount", "Date"])
     return data
 
-# Save data back to the file
+# Function to save the data into a CSV file
 def save_data(data):
-    data.to_csv(DATA_FILE, index=False)
+    data.to_csv("expenses.csv", index=False)
 
-# Main app function
+# Main function to run the app
 def main():
     st.title("Simple Expense Tracker")
-    st.sidebar.header("Menu")
-    option = st.sidebar.selectbox("Select an option:", ["Add Expense", "View Expenses"])
 
-    # Add Expense Section
-    if option == "Add Expense":
-        st.header("Add a New Expense")
-        date = st.date_input("Date", datetime.now().date())
-        description = st.text_input("Description")
-        category = st.selectbox("Category", ["Food", "Travel", "Shopping", "Bills", "Other"])
-        amount = st.number_input("Amount", min_value=0.0, step=0.01)
-        
-        if st.button("Add Expense"):
-            if description and amount > 0:
-                new_data = {"Date": date, "Description": description, "Category": category, "Amount": amount}
-                data = load_data()
-                data = data.append(new_data, ignore_index=True)
-                save_data(data)
-                st.success("Expense added successfully!")
-            else:
-                st.error("Please fill out all fields.")
+    # Load the existing data
+    data = load_data()
 
-    # View Expenses Section
-    elif option == "View Expenses":
-        st.header("Expense List")
-        data = load_data()
-        
-        if not data.empty:
-            st.dataframe(data)
-            total_expense = data["Amount"].sum()
-            st.write(f"### Total Expense: ${total_expense:.2f}")
-            
-            if st.button("Download CSV"):
-                st.download_button(
-                    label="Download Expenses",
-                    data=data.to_csv(index=False),
-                    file_name="expenses.csv",
-                    mime="text/csv",
-                )
-        else:
-            st.warning("No expenses recorded yet.")
+    # Form to record a new expense
+    with st.form("expense_form"):
+        st.subheader("Record a New Expense")
+        category = st.selectbox("Category", ["Food", "Transport", "Entertainment", "Bills", "Other"])
+        amount = st.number_input("Amount", min_value=0.01, format="%.2f")
+        date = st.date_input("Date")
+        submit_button = st.form_submit_button("Submit")
+
+        if submit_button:
+            # Add new data to the DataFrame
+            new_data = pd.DataFrame({"Category": [category], "Amount": [amount], "Date": [date]})
+            data = pd.concat([data, new_data], ignore_index=True)  # Replacing .append() with pd.concat()
+
+            # Save the updated data
+            save_data(data)
+
+            st.success(f"Expense added: {category} - ${amount} on {date}")
+    
+    # Display the current expenses
+    if not data.empty:
+        st.subheader("Expenses Recorded")
+        st.dataframe(data)
+    else:
+        st.warning("No expenses recorded yet.")
 
 # Run the app
 if __name__ == "__main__":
